@@ -1,0 +1,53 @@
+﻿@page "/insercion"
+
+@using BlazorApp13.Modelos
+@inject IJSRuntime JS
+
+<h3>Inserción</h3>
+
+<div class="insercion-form">
+    <input type="number" @bind="valorAInsertar" placeholder="Ingresa valor a insertar" />
+    <button @onclick="InsertarValor">Agregar</button>
+</div>
+
+<div class="arbol" style="margin-top:20px;">
+    <ArbolD3 @ref="arbolComponente" Arbol="@arbol" DivId="d3treeInsercion" NodoActivo="@nodoActivo" />
+</div>
+
+@code {
+    private Arbol arbol = new Arbol();
+    private int valorAInsertar;
+
+    private ArbolD3? arbolComponente;
+
+    private int? nodoActivo = null;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && arbolComponente != null)
+        {
+            // Mostrar árbol sin nodo activo al cargar la página
+            await arbolComponente.DibujarArbol(null);
+        }
+    }
+
+    private async Task InsertarValor()
+    {
+        nodoActivo = null;
+
+        if (arbolComponente != null)
+        {
+            // Ejecutar la inserción animada, pasando la función que actualiza el nodo activo
+            await arbol.InsertarAnimado(valorAInsertar, async (nodo) =>
+            {
+                nodoActivo = nodo?.Valor;
+                await arbolComponente.DibujarArbol(nodoActivo);
+                await Task.Delay(500);
+            });
+
+            // Limpiar el nodo activo y redibujar árbol completo
+            nodoActivo = null;
+            await arbolComponente.DibujarArbol(null);
+        }
+    }
+}

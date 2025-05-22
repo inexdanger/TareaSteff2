@@ -1,0 +1,26 @@
+﻿@using BlazorApp13.Modelos
+@inject IJSRuntime JS
+
+<div id="@DivId" style="border:1px solid black; width: 650px; height: 450px;"></div>
+
+@code {
+    [Parameter]
+    public Arbol Arbol { get; set; }
+
+    [Parameter]
+    public string DivId { get; set; } = "d3tree";
+
+    [Parameter]
+    public int? NodoActivo { get; set; } = null;
+
+    public async Task DibujarArbol()
+    {
+        await JS.InvokeVoidAsync("d3Tree.renderTree", DivId, Arbol.ObtenerArbolParaD3());
+    }
+
+    public async Task DibujarArbol(int? nodoActivo)
+    {
+        await JS.InvokeVoidAsync("d3Tree.renderTree", DivId, Arbol.ObtenerArbolParaD3(), nodoActivo);
+    }
+
+}

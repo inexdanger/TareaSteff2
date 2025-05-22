@@ -1,0 +1,113 @@
+﻿@page "/recorridos"
+@using BlazorApp13.Modelos
+@inject IJSRuntime JS
+
+<h3>Recorridos del Árbol</h3>
+
+<div class="arbol" style="margin-top:20px;">
+    <ArbolD3 @ref="arbolComponente" Arbol="@arbol" DivId="d3treeRecorridos" NodoActivo="@nodoActivo" />
+</div>
+
+<div style="margin-top:20px;">
+    <button @onclick="MostrarPreorden">Preorden</button>
+    <button @onclick="MostrarInorden">Inorden</button>
+    <button @onclick="MostrarPostorden">Postorden</button>
+</div>
+
+<div style="margin-top:20px;">
+    @if (!string.IsNullOrEmpty(preordenTexto))
+    {
+        <p><b>Preorden:</b> @preordenTexto</p>
+    }
+    @if (!string.IsNullOrEmpty(inordenTexto))
+    {
+        <p><b>Inorden:</b> @inordenTexto</p>
+    }
+    @if (!string.IsNullOrEmpty(postordenTexto))
+    {
+        <p><b>Postorden:</b> @postordenTexto</p>
+    }
+</div>
+
+@code {
+    private Arbol arbol = new Arbol();
+    private ArbolD3? arbolComponente;
+
+    private string preordenTexto = "";
+    private string inordenTexto = "";
+    private string postordenTexto = "";
+
+    // Nodo activo para animar
+    private int? nodoActivo = null;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && arbolComponente != null)
+        {
+            await arbolComponente.DibujarArbol(null);
+        }
+    }
+
+    private async Task MostrarPreorden()
+    {
+        preordenTexto = "";
+        nodoActivo = null;
+        if (arbolComponente != null)
+        {
+            var lista = new List<int>();
+            await arbol.RecorrerPreordenAnimado(async nodo =>
+            {
+                nodoActivo = nodo?.Valor;
+                if (nodo != null) lista.Add(nodo.Valor);
+
+                await arbolComponente.DibujarArbol(nodoActivo);
+                await Task.Delay(200);
+            });
+            nodoActivo = null;
+            await arbolComponente.DibujarArbol(null);
+            preordenTexto = string.Join(", ", lista);
+        }
+    }
+
+    private async Task MostrarInorden()
+    {
+        inordenTexto = "";
+        nodoActivo = null;
+        if (arbolComponente != null)
+        {
+            var lista = new List<int>();
+            await arbol.RecorrerInordenAnimado(async nodo =>
+            {
+                nodoActivo = nodo?.Valor;
+                if (nodo != null) lista.Add(nodo.Valor);
+
+                await arbolComponente.DibujarArbol(nodoActivo);
+                await Task.Delay(200);
+            });
+            nodoActivo = null;
+            await arbolComponente.DibujarArbol(null);
+            inordenTexto = string.Join(", ", lista);
+        }
+    }
+
+    private async Task MostrarPostorden()
+    {
+        postordenTexto = "";
+        nodoActivo = null;
+        if (arbolComponente != null)
+        {
+            var lista = new List<int>();
+            await arbol.RecorrerPostordenAnimado(async nodo =>
+            {
+                nodoActivo = nodo?.Valor;
+                if (nodo != null) lista.Add(nodo.Valor);
+
+                await arbolComponente.DibujarArbol(nodoActivo);
+                await Task.Delay(200);
+            });
+            nodoActivo = null;
+            await arbolComponente.DibujarArbol(null);
+            postordenTexto = string.Join(", ", lista);
+        }
+    }
+}

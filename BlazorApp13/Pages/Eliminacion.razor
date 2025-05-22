@@ -1,0 +1,58 @@
+﻿@page "/eliminacion"
+
+@using BlazorApp13.Modelos
+@inject IJSRuntime JS
+
+<h3>Eliminación</h3>
+
+<div class="eliminacion-form">
+    <input type="number" @bind="valorAEliminar" placeholder="Ingresa valor a eliminar" />
+    <button @onclick="EliminarValor">Eliminar</button>
+</div>
+
+<div class="arbol" style="margin-top:20px;">
+    <ArbolD3 @ref="arbolComponente" Arbol="@arbol" DivId="d3treeEliminacion" NodoActivo="@nodoActivo" />
+</div>
+
+@code {
+    private Arbol arbol = new Arbol();
+    private int valorAEliminar;
+    private ArbolD3? arbolComponente;
+
+    private int? nodoActivo = null;
+
+    private bool _arbolDibujado = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && arbolComponente != null)
+        {
+            // Mostrar árbol sin nodo activo al cargar la página
+            await arbolComponente.DibujarArbol(null);
+            _arbolDibujado = true;
+        }
+    }
+
+    private async Task EliminarValor()
+    {
+        nodoActivo = null;
+        resultadoEliminacion = null;
+
+        if (arbolComponente != null)
+        {
+            // Ejecuta la eliminación animada, pasando la función que actualizará el nodo activo
+            await arbol.EliminarAnimado(valorAEliminar, async (nodo) =>
+            {
+                nodoActivo = nodo?.Valor;
+                await arbolComponente.DibujarArbol(nodoActivo);
+                await Task.Delay(500); // Pausa para animación
+            });
+
+            // Al terminar la animación, limpia nodo activo y redibuja árbol final
+            nodoActivo = null;
+            await arbolComponente.DibujarArbol(null);
+        }
+    }
+
+    private string? resultadoEliminacion;
+}

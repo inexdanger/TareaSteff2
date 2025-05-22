@@ -1,0 +1,69 @@
+﻿@using BlazorApp13.Modelos
+@page "/busqueda"
+@inject IJSRuntime JS
+
+<h3>Búsqueda</h3>
+
+<div class="busqueda-form">
+    <input type="number" @bind="valorBuscado" placeholder="Ingresa valor a buscar" />
+    <button @onclick="BuscarValor">Buscar</button>
+</div>
+
+<div class="resultado-busqueda">
+    @if (resultadoBusqueda != null)
+    {
+        <p>@resultadoBusqueda</p>
+    }
+</div>
+
+<div class="arbol" style="margin-top:20px;">
+    <ArbolD3 @ref="arbolComponente" Arbol="@arbol" DivId="d3treeBusqueda" NodoActivo="@nodoActivo" />
+</div>
+
+@code {
+    private Arbol arbol = new Arbol();
+    private int valorBuscado;
+    private string? resultadoBusqueda;
+
+    private ArbolD3? arbolComponente;
+    private int? nodoActivo = null;
+
+    private bool _arbolDibujado = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && arbolComponente != null)
+        {
+            await arbolComponente.DibujarArbol(null);
+            _arbolDibujado = true;
+        }
+    }
+
+    private async Task BuscarValor()
+    {
+        resultadoBusqueda = null;
+        nodoActivo = null;
+
+        await arbol.RecorrerHastaNodo(valorBuscado, async nodo =>
+        {
+            nodoActivo = nodo?.Valor;
+
+            if (arbolComponente != null)
+            {
+                await arbolComponente.DibujarArbol(nodoActivo);
+            }
+
+            await Task.Delay(500);
+        });
+
+        bool encontrado = arbol.Buscar(valorBuscado);
+        resultadoBusqueda = encontrado ? $"Valor {valorBuscado} encontrado." : $"Valor {valorBuscado} no encontrado.";
+
+        nodoActivo = null;
+        if (arbolComponente != null)
+        {
+            await arbolComponente.DibujarArbol(nodoActivo);
+        }
+    }
+}
+z
